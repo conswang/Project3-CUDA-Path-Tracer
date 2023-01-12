@@ -95,7 +95,11 @@ int main(int argc, char** argv) {
 }
 
 void saveImage() {
+#if DENOISE
+	float samples = 1.f;
+#else
 	float samples = iteration;
+#endif
 	// output image file
 	image img(width, height);
 
@@ -164,14 +168,22 @@ void runCuda() {
 		pathtrace(pbo_dptr, frame, iteration);
 #endif
 
+#if DENOISE
+		int filterSize = 320;
+		float colorWeight = 2;
+		float normalWeight = 1;
+		float positionWeight = 1;
+		denoiseAndWriteToPbo(pbo_dptr, iteration, filterSize, colorWeight, normalWeight, positionWeight);
+#endif
+
 		// unmap buffer object
 		cudaGLUnmapBufferObject(pbo);
 	}
 	else {
-		saveImage();
+		//saveImage();
 		pathtraceFree();
 		cudaDeviceReset();
-		exit(EXIT_SUCCESS);
+		//exit(EXIT_SUCCESS);
 	}
 
 #if MEASURE_PERF
