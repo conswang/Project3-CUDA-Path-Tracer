@@ -170,7 +170,7 @@ void runCuda() {
 
 #if DENOISE
 		int filterSize = 320;
-		float colorWeight = 2;
+		float colorWeight = 4;
 		float normalWeight = 1;
 		float positionWeight = 1;
 		denoiseAndWriteToPbo(pbo_dptr, iteration, filterSize, colorWeight, normalWeight, positionWeight);
@@ -180,7 +180,7 @@ void runCuda() {
 		cudaGLUnmapBufferObject(pbo);
 	}
 	else {
-		//saveImage();
+		saveImage();
 		pathtraceFree();
 		cudaDeviceReset();
 		//exit(EXIT_SUCCESS);
