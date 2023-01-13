@@ -177,10 +177,10 @@ void runCuda() {
 	else {
 
 #if DENOISE
-		int filterSize = 320;
-		float colorWeight = 4;
-		float normalWeight = 1;
-		float positionWeight = 1;
+		int filterSize = 80;
+		float colorWeight = 2;
+		float normalWeight = 0.12;
+		float positionWeight = 0.5;
 
 		auto denoiseStart = std::chrono::system_clock::now();
 
