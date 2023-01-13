@@ -33,6 +33,8 @@ using namespace scene_structs;
 
 double totalIterTime = 0;
 
+std::chrono::system_clock::time_point pathtraceStart;
+
 //-------------------------------
 //-------------MAIN--------------
 //-------------------------------
@@ -147,13 +149,17 @@ void runCuda() {
 
 	if (iteration == 0) {
 		pathtraceFree();
+
+		pathtraceStart = std::chrono::system_clock::now();
+
 		pathtraceInit(scene);
 	}
 
+	uchar4* pbo_dptr = NULL;
+	cudaGLMapBufferObject((void**)&pbo_dptr, pbo);
+
 	if (iteration < renderState->iterations) {
-		uchar4* pbo_dptr = NULL;
 		iteration++;
-		cudaGLMapBufferObject((void**)&pbo_dptr, pbo);
 
 		// execute the kernel
 		int frame = 0;
@@ -167,24 +173,33 @@ void runCuda() {
 #else
 		pathtrace(pbo_dptr, frame, iteration);
 #endif
+	}
+	else {
 
 #if DENOISE
 		int filterSize = 320;
 		float colorWeight = 4;
 		float normalWeight = 1;
 		float positionWeight = 1;
+
+		auto denoiseStart = std::chrono::system_clock::now();
+
 		denoiseAndWriteToPbo(pbo_dptr, iteration, filterSize, colorWeight, normalWeight, positionWeight);
+
+		auto end = std::chrono::system_clock::now();
+
+		std::cout << "Total pathtrace run-time: " << ((std::chrono::duration<double>) (end - pathtraceStart)).count() << std::endl;
+		std::cout << "Total denoise run-time: " << ((std::chrono::duration<double>) (end - denoiseStart)).count() << std::endl;
 #endif
 
-		// unmap buffer object
-		cudaGLUnmapBufferObject(pbo);
-	}
-	else {
 		saveImage();
 		pathtraceFree();
 		cudaDeviceReset();
 		//exit(EXIT_SUCCESS);
 	}
+
+	// unmap buffer object
+	cudaGLUnmapBufferObject(pbo);
 
 #if MEASURE_PERF
 	std::cout << "Total iter time " << totalIterTime << std::endl;

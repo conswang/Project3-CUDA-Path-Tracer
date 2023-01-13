@@ -6,6 +6,7 @@
 #include <thrust/remove.h>
 #include <thrust/partition.h>
 #include <thrust/device_vector.h>
+#include <chrono>
 
 #include "sceneStructs.h"
 #include "scene.h"
@@ -640,8 +641,15 @@ void pathtrace(uchar4* pbo, int frame, int iter) {
 
 		cudaDeviceSynchronize();
 #if DENOISE
-		if (depth == 0) {
+		if (depth == 0 && iter == 1) {
+
+			auto start = std::chrono::system_clock::now();
+
 			generateGBuffer << <numblocksPathSegmentTracing, blockSize1d >> > (pixelcount, dev_intersections, dev_paths, dev_gBuffer);
+			cudaDeviceSynchronize();
+
+			auto end = std::chrono::system_clock::now();
+			std::cout << "Total gbuffer run-time: " << ((std::chrono::duration<double>) (end - start)).count() << std::endl;
 		}
 #endif
 
