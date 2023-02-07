@@ -11,9 +11,10 @@
 #define BVH 1
 #define ROUGHNESS_METALLIC 1
 #define SORT_BY_MATERIALS 0
-// turn on at most ONE of first bounce caching and anti-aliasing
+// turn on at most ONE of first bounce caching and anti-aliasing and denoising
 #define CACHE_FIRST_BOUNCE 0
-#define ANTI_ALIAS 1
+#define ANTI_ALIAS 0
+#define DENOISE 1
 // for debugging
 #define SHOW_NORMALS 0
 #define SHOW_METALLIC 0
@@ -132,6 +133,11 @@ struct ShadeableIntersection {
   glm::vec4 surfaceTangent; // to convert tangent space normal from texture into normal
   glm::vec2 uv;
   int materialId;
+};
+
+struct GBufferPixel {
+  glm::vec3 normal;
+  glm::vec3 position; // todo: store t value instead and reconstruct position based on camera
 };
 
 }
